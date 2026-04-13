@@ -160,6 +160,8 @@ function formatLocation(region) {
 
 let v4Cache = null;
 let v6Cache = null;
+let v4Updated = '';
+let v6Updated = '';
 let v4LoadingPromise = null;
 let v6LoadingPromise = null;
 
@@ -171,7 +173,8 @@ async function loadV4(bucket) {
       const obj = await bucket.get('ip2region_v4.xdb');
       if (obj) {
         v4Cache = new Uint8Array(await obj.arrayBuffer());
-        console.log(`IPv4 xdb loaded: ${(v4Cache.length / 1024 / 1024).toFixed(2)} MB`);
+        v4Updated = obj.uploaded?.toISOString() || '';
+        console.log(`IPv4 xdb loaded: ${(v4Cache.length / 1024 / 1024).toFixed(2)} MB, uploaded: ${v4Updated}`);
       } else {
         console.error('ip2region_v4.xdb not found in R2');
       }
@@ -190,7 +193,8 @@ async function loadV6(bucket) {
       const obj = await bucket.get('ip2region_v6.xdb');
       if (obj) {
         v6Cache = new Uint8Array(await obj.arrayBuffer());
-        console.log(`IPv6 xdb loaded: ${(v6Cache.length / 1024 / 1024).toFixed(2)} MB`);
+        v6Updated = obj.uploaded?.toISOString() || '';
+        console.log(`IPv6 xdb loaded: ${(v6Cache.length / 1024 / 1024).toFixed(2)} MB, uploaded: ${v6Updated}`);
       } else {
         console.error('ip2region_v6.xdb not found in R2');
       }
@@ -224,6 +228,8 @@ export default {
         用法: '/api/lookup?ip=8.8.8.8',
         IPv4已就绪: v4Cache !== null,
         IPv6已就绪: v6Cache !== null,
+        IPv4数据更新时间: v4Updated || '未加载',
+        IPv6数据更新时间: v6Updated || '未加载',
       });
     }
 
@@ -233,6 +239,8 @@ export default {
         状态: '正常',
         IPv4已就绪: v4Cache !== null,
         IPv6已就绪: v6Cache !== null,
+        IPv4数据更新时间: v4Updated || '未加载',
+        IPv6数据更新时间: v6Updated || '未加载',
       });
     }
 

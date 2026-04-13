@@ -178,9 +178,43 @@ https://ip2region-api.你的名字.workers.dev/api/lookup?ip=113.118.113.77
 
 ## 更新 xdb 数据文件
 
-ip2region 的数据会不定期更新。更新方法：
+ip2region 的数据会不定期更新。有三种更新方式：
 
-### 方法一：命令行上传（推荐）
+### 方法一：GitHub Actions 自动更新（推荐，全自动）
+
+项目已配置 GitHub Actions 工作流，**每周一凌晨 3 点**自动检查 ip2region 仓库是否有更新，如果有就自动下载新 xdb 并上传到 R2。
+
+**设置步骤：**
+
+1. 把 `ip-api-service-cf` 项目推送到你的 GitHub 仓库
+
+2. 获取 Cloudflare API Token：
+   - 打开 https://dash.cloudflare.com/profile/api-tokens
+   - 点击 **Create Token**
+   - 选择 **Edit Cloudflare Workers** 模板
+   - 确保权限包含：`Workers R2 Storage:Edit`、`Workers Scripts:Edit`
+   - 创建后复制 Token
+
+3. 在 GitHub 仓库中配置 Secret：
+   - 打开你的 GitHub 仓库 → **Settings** → **Secrets and variables** → **Actions**
+   - 点击 **New repository secret**
+   - 名称填 `CLOUDFLARE_API_TOKEN`，值填刚才复制的 Token
+   - 点击 **Add secret**
+
+4. 完成！之后每周一会自动检查更新。你也可以在仓库的 **Actions** 页面手动点击 **Run workflow** 立即触发。
+
+**工作流程：**
+
+```
+每周一凌晨3点（或手动触发）
+    ↓
+检查 ip2region 仓库是否有新 commit
+    ↓
+有更新 → 下载新 xdb → 上传到 R2 → 记录 commit
+无更新 → 跳过
+```
+
+### 方法二：命令行手动上传
 
 1. 去 [ip2region Releases](https://github.com/lionsoul2014/ip2region/releases) 页面下载最新版本的 `ip2region_v4.xdb` 和 `ip2region_v6.xdb`
 
@@ -194,16 +228,31 @@ npx wrangler r2 object put ip2region-db/ip2region_v4.xdb --file data/ip2region_v
 npx wrangler r2 object put ip2region-db/ip2region_v6.xdb --file data/ip2region_v6.xdb --remote
 ```
 
-4. Worker 下次冷启动时会自动使用新数据。如果想立即生效，可以在 Cloudflare Dashboard 中重启 Worker：
-   - 打开 https://dash.cloudflare.com
-   - 左侧菜单 → **Workers & Pages** → 点击 `ip2region-api`
-   - 点击右上角 **···** → **Rollback** 或重新部署
+4. Worker 下次冷启动时会自动使用新数据。如果想立即生效，重新部署即可：
 
-### 方法二：Cloudflare Dashboard 手动上传
+```powershell
+npx wrangler deploy
+```
+
+### 方法三：Cloudflare Dashboard 手动上传
 
 1. 打开 https://dash.cloudflare.com
 2. 左侧菜单 → **R2 Object Storage** → 点击 `ip2region-db` 存储桶
 3. 点击 **Upload** → 选择新的 xdb 文件上传（会自动覆盖同名文件）
+
+### 查看当前数据版本
+
+访问 `/api/health` 可以看到数据的上传时间：
+
+```json
+{
+  "状态": "正常",
+  "IPv4已就绪": true,
+  "IPv6已就绪": false,
+  "IPv4数据更新时间": "2026-04-13T01:36:00.000Z",
+  "IPv6数据更新时间": "未加载"
+}
+```
 
 ---
 
@@ -325,15 +374,18 @@ curl "https://你的域名/api/lookup?ip=8.8.8.8"
 
 ```
 ip-api-service-cf/
+├── .github/
+│   └── workflows/
+│       └── update-data.yml  # GitHub Actions 自动更新工作流
 ├── src/
-│   └── index.js          # Worker 主代码（自包含搜索逻辑，不依赖 fs）
-├── data/                  # xdb 数据文件（不上传到 Git）
-│   ├── ip2region_v4.xdb   # IPv4 数据库 (~10MB)
-│   └── ip2region_v6.xdb   # IPv6 数据库 (~34MB)
-├── wrangler.toml          # Cloudflare Workers 配置
-├── package.json           # 项目依赖
-├── .gitignore             # Git 忽略规则
-└── README.md              # 本文档
+│   └── index.js              # Worker 主代码（自包含搜索逻辑，不依赖 fs）
+├── data/                      # xdb 数据文件（不上传到 Git）
+│   ├── ip2region_v4.xdb       # IPv4 数据库 (~10MB)
+│   └── ip2region_v6.xdb       # IPv6 数据库 (~34MB)
+├── wrangler.toml              # Cloudflare Workers 配置
+├── package.json               # 项目依赖
+├── .gitignore                 # Git 忽略规则
+└── README.md                  # 本文档
 ```
 
 ---
