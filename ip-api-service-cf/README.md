@@ -77,7 +77,9 @@ GET /api/health
 {
   "状态": "正常",
   "IPv4已就绪": true,
-  "IPv6已就绪": false
+  "IPv6已就绪": true,
+  "IPv4数据更新时间": "2026-04-13T01:36:00.000Z",
+  "IPv6数据更新时间": "2026-04-13T01:36:02.000Z"
 }
 ```
 
@@ -91,8 +93,10 @@ GET /
 {
   "服务": "ip2region-api",
   "用法": "/api/lookup?ip=8.8.8.8",
-  "IPv4已就绪": false,
-  "IPv6已就绪": false
+  "IPv4已就绪": true,
+  "IPv6已就绪": true,
+  "IPv4数据更新时间": "2026-04-13T01:36:00.000Z",
+  "IPv6数据更新时间": "2026-04-13T01:36:02.000Z"
 }
 ```
 
@@ -160,8 +164,8 @@ npx wrangler deploy
 部署成功后终端会输出你的 API 地址：
 
 ```
-Published ip2region-api (x.xx sec)
-  https://ip2region-api.你的名字.workers.dev
+Published rituxip (x.xx sec)
+  https://rituxip.你的名字.workers.dev
 ```
 
 ### 第 6 步：验证
@@ -169,7 +173,7 @@ Published ip2region-api (x.xx sec)
 在浏览器中打开：
 
 ```
-https://ip2region-api.你的名字.workers.dev/api/lookup?ip=113.118.113.77
+https://rituxip.你的名字.workers.dev/api/lookup?ip=113.118.113.77
 ```
 
 第一次请求会稍慢（从 R2 加载数据），之后就会很快。
@@ -182,7 +186,10 @@ ip2region 的数据会不定期更新。有三种更新方式：
 
 ### 方法一：GitHub Actions 自动更新（推荐，全自动）
 
-项目已配置 GitHub Actions 工作流，**每周一凌晨 3 点**自动检查 ip2region 仓库是否有更新，如果有就自动下载新 xdb 并上传到 R2。
+项目已配置 GitHub Actions 工作流，按 `cron: 0 3 * * 1` 自动检查 ip2region 仓库是否有更新，如果有就自动下载新 xdb 并上传到 R2。
+这表示：
+- UTC 时间：每周一 03:00
+- 北京时间（UTC+8）：每周一 11:00
 
 **设置步骤：**
 
@@ -206,7 +213,7 @@ ip2region 的数据会不定期更新。有三种更新方式：
 **工作流程：**
 
 ```
-每周一凌晨3点（或手动触发）
+每周一 11:00（北京时间，或手动触发）
     ↓
 检查 ip2region 仓库是否有新 commit
     ↓
@@ -248,9 +255,9 @@ npx wrangler deploy
 {
   "状态": "正常",
   "IPv4已就绪": true,
-  "IPv6已就绪": false,
+  "IPv6已就绪": true,
   "IPv4数据更新时间": "2026-04-13T01:36:00.000Z",
-  "IPv6数据更新时间": "未加载"
+  "IPv6数据更新时间": "2026-04-13T01:36:02.000Z"
 }
 ```
 
@@ -261,7 +268,7 @@ npx wrangler deploy
 如果不希望任何人都能调用 API，可以设置密码：
 
 1. 打开 https://dash.cloudflare.com
-2. 左侧菜单 → **Workers & Pages** → 点击 `ip2region-api`
+2. 左侧菜单 → **Workers & Pages** → 点击 `rituxip`
 3. 点击 **Settings** → **Variables and Secrets**
 4. 点击 **Add** → 名称填 `AUTH_TOKEN`，值填你想要的密码（如 `my-secret-123`）
 5. 选择 **Encrypt** → 点击 **Save**
@@ -285,8 +292,8 @@ Authorization: Bearer my-secret-123
 
 | 版本 | 加载时机 | 大小 | 说明 |
 |------|---------|------|------|
-| IPv4 | 首次查询时自动加载 | ~10 MB | 默认加载，绝大多数用户是 IPv4 |
-| IPv6 | 首次查询 IPv6 地址时加载 | ~34 MB | 按需加载，不查 IPv6 就不占内存 |
+| IPv4 | 首次访问 `/`、`/api/health` 或 IPv4 查询时加载 | ~10 MB | 会缓存到 Worker 内存 |
+| IPv6 | 首次访问 `/`、`/api/health` 或 IPv6 查询时加载 | ~34 MB | 会缓存到 Worker 内存 |
 
 ### 缓存生命周期
 
