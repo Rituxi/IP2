@@ -160,44 +160,45 @@ function formatLocation(region) {
 
 let v4Cache = null;
 let v6Cache = null;
-let loadingPromise = null;
+let v4LoadingPromise = null;
+let v6LoadingPromise = null;
 
-async function loadDBs(bucket) {
-  if (v4Cache && v6Cache) return;
-
-  if (loadingPromise) {
-    await loadingPromise;
-    return;
-  }
-
-  loadingPromise = (async () => {
+async function loadV4(bucket) {
+  if (v4Cache) return;
+  if (v4LoadingPromise) { await v4LoadingPromise; return; }
+  v4LoadingPromise = (async () => {
     try {
-      if (!v4Cache) {
-        const v4Obj = await bucket.get('ip2region_v4.xdb');
-        if (v4Obj) {
-          const ab = await v4Obj.arrayBuffer();
-          v4Cache = new Uint8Array(ab);
-          console.log(`IPv4 xdb loaded from R2: ${(v4Cache.length / 1024 / 1024).toFixed(2)} MB`);
-        } else {
-          console.error('ip2region_v4.xdb not found in R2');
-        }
-      }
-      if (!v6Cache) {
-        const v6Obj = await bucket.get('ip2region_v6.xdb');
-        if (v6Obj) {
-          const ab = await v6Obj.arrayBuffer();
-          v6Cache = new Uint8Array(ab);
-          console.log(`IPv6 xdb loaded from R2: ${(v6Cache.length / 1024 / 1024).toFixed(2)} MB`);
-        } else {
-          console.error('ip2region_v6.xdb not found in R2');
-        }
+      const obj = await bucket.get('ip2region_v4.xdb');
+      if (obj) {
+        v4Cache = new Uint8Array(await obj.arrayBuffer());
+        console.log(`IPv4 xdb loaded: ${(v4Cache.length / 1024 / 1024).toFixed(2)} MB`);
+      } else {
+        console.error('ip2region_v4.xdb not found in R2');
       }
     } finally {
-      loadingPromise = null;
+      v4LoadingPromise = null;
     }
   })();
+  await v4LoadingPromise;
+}
 
-  await loadingPromise;
+async function loadV6(bucket) {
+  if (v6Cache) return;
+  if (v6LoadingPromise) { await v6LoadingPromise; return; }
+  v6LoadingPromise = (async () => {
+    try {
+      const obj = await bucket.get('ip2region_v6.xdb');
+      if (obj) {
+        v6Cache = new Uint8Array(await obj.arrayBuffer());
+        console.log(`IPv6 xdb loaded: ${(v6Cache.length / 1024 / 1024).toFixed(2)} MB`);
+      } else {
+        console.error('ip2region_v6.xdb not found in R2');
+      }
+    } finally {
+      v6LoadingPromise = null;
+    }
+  })();
+  await v6LoadingPromise;
 }
 
 function jsonResponse(data, status = 200) {
@@ -219,19 +220,19 @@ export default {
 
     if (url.pathname === '/' || url.pathname === '') {
       return jsonResponse({
-        service: 'ip2region-api',
-        usage: '/api/lookup?ip=8.8.8.8',
-        ipv4: v4Cache !== null,
-        ipv6: v6Cache !== null,
+        服务: 'ip2region-api',
+        用法: '/api/lookup?ip=8.8.8.8',
+        IPv4已就绪: v4Cache !== null,
+        IPv6已就绪: v6Cache !== null,
       });
     }
 
     if (url.pathname === '/api/health') {
-      await loadDBs(bucket);
+      await loadV4(bucket);
       return jsonResponse({
-        status: 'ok',
-        ipv4: v4Cache !== null,
-        ipv6: v6Cache !== null,
+        状态: '正常',
+        IPv4已就绪: v4Cache !== null,
+        IPv6已就绪: v6Cache !== null,
       });
     }
 
@@ -240,30 +241,34 @@ export default {
         const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
           || url.searchParams.get('token') || '';
         if (token !== authToken) {
-          return jsonResponse({ error: 'UNAUTHORIZED' }, 401);
+          return jsonResponse({ 错误: '未授权', 说明: '认证失败，请提供正确的token' }, 401);
         }
       }
 
       const ip = (url.searchParams.get('ip') || '').trim();
       if (!ip) {
         return jsonResponse({
-          error: 'MISSING_IP',
-          message: '请提供 ip 参数，例如 /api/lookup?ip=8.8.8.8',
+          错误: '缺少IP',
+          说明: '请提供 ip 参数，例如 /api/lookup?ip=8.8.8.8',
         }, 400);
       }
 
       const version = detectIPVersion(ip);
       if (version === 0) {
-        return jsonResponse({ error: 'INVALID_IP', message: `无效的 IP 地址: ${ip}` }, 400);
+        return jsonResponse({ 错误: '无效IP', 说明: `无效的 IP 地址: ${ip}` }, 400);
       }
 
-      await loadDBs(bucket);
+      if (version === 4) {
+        await loadV4(bucket);
+      } else {
+        await loadV6(bucket);
+      }
 
       const cBuffer = version === 6 ? v6Cache : v4Cache;
       if (!cBuffer) {
         return jsonResponse({
-          error: 'SERVICE_UNAVAILABLE',
-          message: `IPv${version} 查询未初始化`,
+          错误: '服务不可用',
+          说明: `IPv${version} 数据库未加载`,
         }, 503);
       }
 
@@ -274,16 +279,20 @@ export default {
 
         return jsonResponse({
           ip,
-          version,
-          region,
-          location: formatLocation(region),
-          raw: regionStr,
+          版本: version,
+          国家: region?.country || '',
+          省份: region?.province || '',
+          城市: region?.city || '',
+          运营商: region?.isp || '',
+          国家代码: region?.code || '',
+          位置: formatLocation(region),
+          原始数据: regionStr,
         });
       } catch (e) {
-        return jsonResponse({ error: 'LOOKUP_FAILED', message: e.message }, 500);
+        return jsonResponse({ 错误: '查询失败', 说明: e.message }, 500);
       }
     }
 
-    return jsonResponse({ error: 'NOT_FOUND' }, 404);
+    return jsonResponse({ 错误: '未找到', 说明: '请求的路径不存在' }, 404);
   },
 };
