@@ -1,76 +1,99 @@
-name: 更新 IP 数据库
+name: Update IP Database
 
 on:
   schedule:
-    - cron: '0 3 * * 1'
+    - cron: "0 3 * * 1"
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出仓库
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-      - name: 检查 ip2region 仓库更新
+      - name: Check upstream ip2region commit
         id: check
+        shell: bash
         run: |
-          CURRENT_COMMIT=$(curl -sf --retry 3 --retry-delay 2 --max-time 30 "https://api.github.com/repos/lionsoul2014/ip2region/commits/master" | jq -r '.sha')
-          if [ $? -ne 0 ] || [ -z "$CURRENT_COMMIT" ]; then
-            echo "::error::无法获取最新commit信息，跳过本次更新"
-            echo "has_update=0" >> $GITHUB_OUTPUT
-            exit 0
-          fi
+          set -euo pipefail
+
+          CURRENT_COMMIT="$(curl -sfL --retry 3 --retry-delay 2 --max-time 30 \
+            "https://api.github.com/repos/lionsoul2014/ip2region/commits/master" \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')"
 
           SAVED_COMMIT=""
           if [ -f .last-commit ]; then
-            SAVED_COMMIT=$(cat .last-commit)
+            SAVED_COMMIT="$(cat .last-commit)"
           fi
 
-          echo "current_commit=$CURRENT_COMMIT" >> $GITHUB_OUTPUT
-          echo "saved_commit=$SAVED_COMMIT" >> $GITHUB_OUTPUT
+          echo "current_commit=$CURRENT_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "saved_commit=$SAVED_COMMIT" >> "$GITHUB_OUTPUT"
 
           if [ "$CURRENT_COMMIT" = "$SAVED_COMMIT" ]; then
-            echo "has_update=0" >> $GITHUB_OUTPUT
-            echo "没有发现更新 (commit: ${CURRENT_COMMIT:0:7})"
+            echo "has_update=0" >> "$GITHUB_OUTPUT"
+            echo "No update found (${CURRENT_COMMIT:0:7})"
           else
-            echo "has_update=1" >> $GITHUB_OUTPUT
-            echo "发现更新! ${SAVED_COMMIT:0:7} -> ${CURRENT_COMMIT:0:7}"
+            echo "has_update=1" >> "$GITHUB_OUTPUT"
+            echo "Update found: ${SAVED_COMMIT:0:7} -> ${CURRENT_COMMIT:0:7}"
           fi
 
-      - name: 下载最新 xdb 数据文件
+      - name: Download latest xdb files
         if: steps.check.outputs.has_update == '1'
+        shell: bash
         run: |
-          mkdir -p data
-          curl -L --retry 3 --retry-delay 2 --max-time 120 -o data/ip2region_v4.xdb "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v4.xdb"
-          curl -L --retry 3 --retry-delay 2 --max-time 300 -o data/ip2region_v6.xdb "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v6.xdb"
+          set -euo pipefail
 
-          V4_SIZE=$(stat -c%s data/ip2region_v4.xdb 2>/dev/null || echo 0)
-          V6_SIZE=$(stat -c%s data/ip2region_v6.xdb 2>/dev/null || echo 0)
+          mkdir -p data
+          curl -fL --retry 3 --retry-delay 2 --max-time 120 \
+            -o data/ip2region_v4.xdb \
+            "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v4.xdb"
+          curl -fL --retry 3 --retry-delay 2 --max-time 300 \
+            -o data/ip2region_v6.xdb \
+            "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v6.xdb"
+
+          V4_SIZE="$(stat -c%s data/ip2region_v4.xdb)"
+          V6_SIZE="$(stat -c%s data/ip2region_v6.xdb)"
 
           if [ "$V4_SIZE" -lt 1000000 ] || [ "$V6_SIZE" -lt 1000000 ]; then
-            echo "::error::下载的文件异常 (v4: ${V4_SIZE} bytes, v6: ${V6_SIZE} bytes)，跳过上传"
-            echo "has_update=0" >> $GITHUB_OUTPUT
-            exit 0
+            echo "::error::Downloaded file size looks wrong (v4=${V4_SIZE}, v6=${V6_SIZE})."
+            exit 1
           fi
 
-          echo "下载完成: IPv4 $((V4_SIZE/1048576))MB, IPv6 $((V6_SIZE/1048576))MB"
+          echo "Downloaded: IPv4 $((V4_SIZE/1048576))MB, IPv6 $((V6_SIZE/1048576))MB"
 
-      - name: 上传到 Cloudflare R2
-        if: steps.check.outputs.has_update == '1'
-        run: |
-          npm install -g wrangler
-          npx wrangler r2 object put ip2region-db/ip2region_v4.xdb --file data/ip2region_v4.xdb --remote
-          npx wrangler r2 object put ip2region-db/ip2region_v6.xdb --file data/ip2region_v6.xdb --remote
+      - name: Upload files to Cloudflare R2
+        if: steps.check.outputs.has_update == '1' && secrets.CLOUDFLARE_API_TOKEN != ''
+        working-directory: ip-api-service-cf
+        shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-
-      - name: 保存并推送 commit 记录
-        if: steps.check.outputs.has_update == '1'
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          set -euo pipefail
+          npm install -g wrangler
+          npx wrangler r2 object put ip2region-db/ip2region_v4.xdb --file ../data/ip2region_v4.xdb --remote --config wrangler.toml
+          npx wrangler r2 object put ip2region-db/ip2region_v6.xdb --file ../data/ip2region_v6.xdb --remote --config wrangler.toml
+
+      - name: Skip upload when Cloudflare secret is missing
+        if: steps.check.outputs.has_update == '1' && secrets.CLOUDFLARE_API_TOKEN == ''
+        run: echo "CLOUDFLARE_API_TOKEN is not configured. Skip R2 upload."
+
+      - name: Save and push last commit marker
+        if: steps.check.outputs.has_update == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
           echo "${{ steps.check.outputs.current_commit }}" > .last-commit
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .last-commit
-          git diff --cached --quiet || git commit -m "chore: update ip2region data to ${{ steps.check.outputs.current_commit }}"
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: update ip2region data to ${{ steps.check.outputs.current_commit }}"
           git push
