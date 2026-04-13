@@ -205,6 +205,10 @@ async function loadV6(bucket) {
   await v6LoadingPromise;
 }
 
+async function warmUpDatabases(bucket) {
+  await Promise.all([loadV4(bucket), loadV6(bucket)]);
+}
+
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -223,6 +227,7 @@ export default {
     const authToken = env.AUTH_TOKEN || '';
 
     if (url.pathname === '/' || url.pathname === '') {
+      await warmUpDatabases(bucket);
       return jsonResponse({
         服务: 'ip2region-api',
         用法: '/api/lookup?ip=8.8.8.8',
@@ -234,7 +239,7 @@ export default {
     }
 
     if (url.pathname === '/api/health') {
-      await loadV4(bucket);
+      await warmUpDatabases(bucket);
       return jsonResponse({
         状态: '正常',
         IPv4已就绪: v4Cache !== null,
