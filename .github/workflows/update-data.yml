@@ -66,7 +66,7 @@ jobs:
           echo "Downloaded: IPv4 $((V4_SIZE/1048576))MB, IPv6 $((V6_SIZE/1048576))MB"
 
       - name: Upload files to Cloudflare R2
-        if: steps.check.outputs.has_update == '1' && secrets.CLOUDFLARE_API_TOKEN != ''
+        if: steps.check.outputs.has_update == '1'
         working-directory: ip-api-service-cf
         shell: bash
         env:
@@ -74,13 +74,13 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "CLOUDFLARE_API_TOKEN is not configured. Skip R2 upload."
+            exit 0
+          fi
           npm install -g wrangler
           npx wrangler r2 object put ip2region-db/ip2region_v4.xdb --file ../data/ip2region_v4.xdb --remote --config wrangler.toml
           npx wrangler r2 object put ip2region-db/ip2region_v6.xdb --file ../data/ip2region_v6.xdb --remote --config wrangler.toml
-
-      - name: Skip upload when Cloudflare secret is missing
-        if: steps.check.outputs.has_update == '1' && secrets.CLOUDFLARE_API_TOKEN == ''
-        run: echo "CLOUDFLARE_API_TOKEN is not configured. Skip R2 upload."
 
       - name: Save and push last commit marker
         if: steps.check.outputs.has_update == '1'
