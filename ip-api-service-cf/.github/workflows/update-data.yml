@@ -9,6 +9,9 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
       - name: 检查 ip2region 仓库更新
         id: check
         run: |
@@ -39,19 +42,19 @@ jobs:
         if: steps.check.outputs.has_update == '1'
         run: |
           mkdir -p data
-          curl -L -o data/ip2region_v4.xdb "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v4.xdb"
-          curl -L -o data/ip2region_v6.xdb "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v6.xdb"
+          curl -L --retry 3 --retry-delay 2 --max-time 120 -o data/ip2region_v4.xdb "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v4.xdb"
+          curl -L --retry 3 --retry-delay 2 --max-time 300 -o data/ip2region_v6.xdb "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v6.xdb"
 
           V4_SIZE=$(stat -c%s data/ip2region_v4.xdb 2>/dev/null || echo 0)
           V6_SIZE=$(stat -c%s data/ip2region_v6.xdb 2>/dev/null || echo 0)
 
           if [ "$V4_SIZE" -lt 1000000 ] || [ "$V6_SIZE" -lt 1000000 ]; then
-            echo "下载的文件异常 (v4: ${V4_SIZE} bytes, v6: ${V6_SIZE} bytes)，跳过上传"
+            echo "::error::下载的文件异常 (v4: ${V4_SIZE} bytes, v6: ${V6_SIZE} bytes)，跳过上传"
             echo "has_update=0" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "下载完成: IPv4 $(echo "scale=2; $V4_SIZE/1048576" | bc)MB, IPv6 $(echo "scale=2; $V6_SIZE/1048576" | bc)MB"
+          echo "下载完成: IPv4 $((V4_SIZE/1048576))MB, IPv6 $((V6_SIZE/1048576))MB"
 
       - name: 上传到 Cloudflare R2
         if: steps.check.outputs.has_update == '1'
@@ -62,14 +65,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-      - name: 保存最新 commit
+      - name: 保存并推送 commit 记录
         if: steps.check.outputs.has_update == '1'
         run: |
           echo "${{ steps.check.outputs.current_commit }}" > .last-commit
-
-      - name: 推送 commit 记录
-        if: steps.check.outputs.has_update == '1'
-        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .last-commit
