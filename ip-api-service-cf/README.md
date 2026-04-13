@@ -312,6 +312,71 @@ Worker 实例持续运行（有流量就不会被回收）
 
 ---
 
+## 自动化链路说明
+
+这个项目有两条独立自动化链路，职责不同：
+
+1. GitHub Actions（`.github/workflows/update-data.yml`）
+- 负责：检查上游 `ip2region` 是否更新，下载新 xdb，上传到 R2。
+- 触发：`cron: 0 3 * * 1`（UTC 周一 03:00 = 北京时间周一 11:00）或手动运行。
+- 特性：如果上游没有新 commit，本周不会改动 R2，也不会新增 commit。
+
+2. Cloudflare Git 连接（Workers Dashboard）
+- 负责：当仓库代码变更时，自动部署 Worker 代码。
+- 关键配置：根目录必须是 `ip-api-service-cf`，否则可能找不到 `wrangler.toml`。
+- 注意：这条链路不负责更新 R2 数据文件，R2 更新由 GitHub Actions 负责。
+
+---
+
+## 常见故障排查
+
+### 1) Actions 报错：`Unrecognized named-value: 'secrets'`
+
+- 原因：在 `if:` 表达式里直接使用 `secrets.*`。
+- 处理：改为在 `env` 注入 secret，再在 `run` 脚本里判断是否为空。
+
+### 2) 首页显示“IPv4数据更新时间/IPv6数据更新时间：未加载”
+
+- 原因：Worker 还没完成首次加载，或刚冷启动。
+- 处理：
+  - 先访问 `/` 或 `/api/health`（会触发预热加载）。
+  - 确认 R2 中存在 `ip2region_v4.xdb`、`ip2region_v6.xdb`。
+  - 若仍异常，查看 `npx wrangler tail` 日志。
+
+### 3) 上传 R2 失败
+
+- 检查项：
+  - GitHub Secret `CLOUDFLARE_API_TOKEN` 是否存在。
+  - Token 权限是否包含 `Workers R2 Storage:Edit`。
+  - R2 存储桶名是否为 `ip2region-db`。
+  - 工作流运行目录是否为 `ip-api-service-cf`（需能读到 `wrangler.toml`）。
+
+### 4) Cloudflare 部署失败（Git 集成）
+
+- 检查项：
+  - 根目录是否配置为 `ip-api-service-cf`。
+  - `wrangler.toml` 中 `name` 是否与面板 Worker 名称一致（当前为 `rituxip`）。
+  - Dashboard 的构建/部署命令是否为 `npx wrangler deploy`。
+
+---
+
+## 运维检查清单
+
+建议每周至少检查一次：
+
+1. GitHub Actions 最近一次运行状态是否成功。
+2. R2 存储桶 `ip2region-db` 是否有 `ip2region_v4.xdb`、`ip2region_v6.xdb`。
+3. `https://你的域名/api/health` 是否返回：
+- `IPv4已就绪: true`
+- `IPv6已就绪: true`
+- `IPv4数据更新时间`、`IPv6数据更新时间` 为有效时间。
+4. Cloudflare Worker 最新版本是否已跟随 `main` 分支部署。
+5. 若有异常，先看：
+- GitHub Actions 日志（数据更新链路）
+- Cloudflare 部署日志与 `wrangler tail`（服务运行链路）
+
+---
+
 ## 在你的项目中调用
 
 ### JavaScript / TypeScript
