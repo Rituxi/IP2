@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ip2region-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_TOKEN
+        sync: false

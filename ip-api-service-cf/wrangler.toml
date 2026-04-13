@@ -1,0 +1,8 @@
+name = "ip2region-api"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[r2_buckets]]
+binding = "DB_BUCKET"
+bucket_name = "ip2region-db"

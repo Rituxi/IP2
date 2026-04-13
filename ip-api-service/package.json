@@ -1,0 +1,13 @@
+{
+  "name": "ip2region-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "ip2region.js": "^3.1.8"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "ip2region-api-cf",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "upload-data": "wrangler r2 object put ip2region-db/ip2region_v4.xdb --file data/ip2region_v4.xdb && wrangler r2 object put ip2region-db/ip2region_v6.xdb --file data/ip2region_v6.xdb"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
