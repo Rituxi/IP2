@@ -1,4 +1,4 @@
-name = "ip2region-api"
+name = "rituxip"
 main = "src/index.js"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
