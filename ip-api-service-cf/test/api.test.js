@@ -20,7 +20,7 @@ async function assertJson(response, status, body, cacheControl) {
   assert.deepEqual(await response.json(), body);
 }
 
-test('time uses the Worker clock and changes date at Beijing midnight without caching', async (t) => {
+test('time uses Asia/Taipei and changes date at local midnight without caching', async (t) => {
   const midnight = Date.parse('2026-12-31T16:00:00.000Z');
   const clock = t.mock.method(Date, 'now', () => midnight - 1);
   await assertJson(await request('/api/time', {}), 200, {
@@ -30,6 +30,13 @@ test('time uses the Worker clock and changes date at Beijing midnight without ca
   clock.mock.mockImplementation(() => midnight);
   await assertJson(await request('/api/time', {}), 200, {
     ok: true, unixMs: midnight, date: '2027-01-01',
+  }, 'no-store');
+
+  // Shanghai observed daylight saving then, while Taipei was UTC+8.
+  const historical = Date.parse('1986-07-01T15:30:00.000Z');
+  clock.mock.mockImplementation(() => historical);
+  await assertJson(await request('/api/time', {}), 200, {
+    ok: true, unixMs: historical, date: '1986-07-01',
   }, 'no-store');
 });
 

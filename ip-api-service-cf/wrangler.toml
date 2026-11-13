@@ -2,6 +2,11 @@ name = "rituxip"
 main = "src/index.js"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+preview_urls = false
+
+[vars]
+MOBILEMODELS_ENABLED = "true"
 
 [[r2_buckets]]
 binding = "DB_BUCKET"
