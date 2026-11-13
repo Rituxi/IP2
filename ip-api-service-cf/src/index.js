@@ -15,7 +15,7 @@ export default {
         });
       }
 
-      return url.pathname === '/api/time' ? getTime() : lookupDeviceModel(url.searchParams);
+      return url.pathname === '/api/time' ? getTime() : lookupDeviceModel(url.searchParams, env);
     }
 
     if (url.pathname === '/' || url.pathname === '/api/health') {

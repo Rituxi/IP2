@@ -7,10 +7,12 @@
     "dev": "wrangler dev",
     "test": "node --test",
     "update:device-models": "node scripts/update-apple-models.js",
+    "sync:device-models": "node scripts/sync-mobilemodels.js",
     "deploy": "wrangler deploy",
     "upload-data": "wrangler r2 object put ip2region-db/ip2region_v4.xdb --file data/ip2region_v4.xdb && wrangler r2 object put ip2region-db/ip2region_v6.xdb --file data/ip2region_v6.xdb"
   },
   "devDependencies": {
+    "csv-parse": "7.0.3",
     "wrangler": "^4.0.0"
   }
 }
