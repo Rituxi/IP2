@@ -1,0 +1,197 @@
+[
+  {
+    "source": "https://github.com/LineageOS/lineage_wiki/tree/f33424ecc81eb1125a433419cb88ef4a5fa7f8ca/_data/devices",
+    "license": "CC-BY-SA-3.0",
+    "devices": [
+      [["Motorola"], "Moto G7 Play", "XT1952-1", "XT1952-2", "XT1952-3"],
+      [["Motorola"], "Motorola Edge 20 Pro", "XT2153-1"],
+      [["OnePlus"], "OnePlus 11 5G", "CPH2447", "CPH2449", "CPH2451", "PHB110"],
+      [["OnePlus"], "OnePlus 12", "CPH2573", "CPH2581", "CPH2583", "PJD110"],
+      [["OnePlus"], "OnePlus 12R", "CPH2585", "CPH2609", "CPH2611"],
+      [["OnePlus"], "OnePlus Ace 3", "PJE110"],
+      [["Samsung"], "Galaxy S10", "SM-G973F", "SM-G973F/DS", "SM-G973N"],
+      [["Samsung"], "Galaxy S10+", "SM-G975F", "SM-G975F/DS", "SM-G975N"],
+      [["Samsung"], "Galaxy S10e", "SM-G970F", "SM-G970F/DS", "SM-G970N"],
+      [["Sony"], "Xperia XZ2 Premium", "H8116", "H8166"],
+      [["Xiaomi"], "Mi 11X", "M2012K11AI"],
+      [["Xiaomi", "POCO"], "POCO F3", "M2012K11AG"],
+      [["Xiaomi", "POCO"], "POCO F4", "22021211RG", "22021211RI"],
+      [["Xiaomi", "Redmi"], "Redmi K40", "M2012K11AC"],
+      [["Xiaomi", "Redmi"], "Redmi K40S", "22021211RC"],
+      [["Xiaomi", "Redmi"], "Redmi K50 Ultra", "22081212C"],
+      [["Xiaomi", "Redmi"], "Redmi K60 Pro", "22127RK46C"],
+      [["Xiaomi", "Redmi"], "Redmi Note 10 Pro", "M2101K6G", "M2101K6R"],
+      [["Xiaomi", "Redmi"], "Redmi Note 10 Pro (India)", "M2101K6P"],
+      [["Xiaomi", "Redmi"], "Redmi Note 10 Pro Max (India)", "M2101K6I"],
+      [["Xiaomi"], "Xiaomi 12", "2201123C", "2201123G"],
+      [["Xiaomi"], "Xiaomi 12T Pro", "22081212UG", "22081212R", "22200414R", "A201XM"],
+      [["Xiaomi"], "Xiaomi 13", "2211133C", "2211133G"]
+    ]
+  },
+  {
+    "source": "https://www.mi.com/hk/support/terms/google-ai/",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["Xiaomi"], "Xiaomi 15", "24129PN74G", "24129PN74I"],
+      [["Xiaomi"], "Xiaomi 15 Ultra", "25010PN30G", "25010PN30I"],
+      [["Xiaomi"], "Xiaomi 15T", "25069PTEBG"],
+      [["Xiaomi"], "Xiaomi 15T Pro", "2506BPN68G", "2506BPN68R"],
+      [["Xiaomi"], "Xiaomi 17", "25113PN0EI"],
+      [["Xiaomi"], "Xiaomi 17 Ultra", "2512BPNDAG", "2512BPNDAI"],
+      [["Xiaomi"], "Xiaomi 17T", "2602DPT53G", "2602DPT53I"],
+      [["Xiaomi"], "Xiaomi 17T Pro", "2602EPTC0G", "2602EPTC0R"]
+    ]
+  },
+  {
+    "source": "https://www.mi.com/cl/regulatoryinfo/subtel/",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["Xiaomi", "POCO"], "POCO F7", "25053PC47G"],
+      [["Xiaomi", "POCO"], "POCO X7 Pro", "2412DPC0AG"],
+      [["Xiaomi", "Redmi"], "Redmi Note 14 5G", "24094RAD4G"],
+      [["Xiaomi", "Redmi"], "Redmi Note 14 Pro 5G", "24090RA29G"],
+      [["Xiaomi", "Redmi"], "Redmi Note 14 Pro+ 5G", "24115RA8EG"]
+    ]
+  },
+  {
+    "source": "https://www.samsung.com/hk_en/support/newsalert/129982/",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["Samsung"], "Galaxy A55", "SM-A5560"],
+      [["Samsung"], "Galaxy A56", "SM-A5660"],
+      [["Samsung"], "Galaxy A57", "SM-A5760"],
+      [["Samsung"], "Galaxy S23", "SM-S9110"],
+      [["Samsung"], "Galaxy S23+", "SM-S9160"],
+      [["Samsung"], "Galaxy S23 Ultra", "SM-S9180"],
+      [["Samsung"], "Galaxy S24", "SM-S9210"],
+      [["Samsung"], "Galaxy S24+", "SM-S9260"],
+      [["Samsung"], "Galaxy S24 FE", "SM-S7210"],
+      [["Samsung"], "Galaxy S24 Ultra", "SM-S9280"],
+      [["Samsung"], "Galaxy S25", "SM-S9310"],
+      [["Samsung"], "Galaxy S25+", "SM-S9360"],
+      [["Samsung"], "Galaxy S25 Edge", "SM-S9370"],
+      [["Samsung"], "Galaxy S25 Ultra", "SM-S9380"],
+      [["Samsung"], "Galaxy S26", "SM-S9420"],
+      [["Samsung"], "Galaxy S26+", "SM-S9470"],
+      [["Samsung"], "Galaxy S26 Ultra", "SM-S9480"],
+      [["Samsung"], "Galaxy Z Flip5", "SM-F7310"],
+      [["Samsung"], "Galaxy Z Flip6", "SM-F7410"],
+      [["Samsung"], "Galaxy Z Flip7", "SM-F7660"],
+      [["Samsung"], "Galaxy Z Fold5", "SM-F9460"],
+      [["Samsung"], "Galaxy Z Fold6", "SM-F9560"],
+      [["Samsung"], "Galaxy Z Fold7", "SM-F9660"]
+    ]
+  },
+  {
+    "source": "https://www.samsung.com/global/sustainability/policy-file/AYVhR1k6BicAIx95/LCA%20Results%20for%20Smart%20phones_0222.pdf",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["Samsung"], "Galaxy S24 Ultra", "SM-S928B"]
+    ]
+  },
+  {
+    "source": "https://consumer.huawei.com/hk/mobileservices/huawei-wallet/support-devices/",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["Huawei"], "HUAWEI Mate 20", "HMA-AL00", "HMA-TL00"],
+      [["Huawei"], "HUAWEI Mate 20 Pro", "LYA-AL00", "LYA-AL10", "LYA-TL00"],
+      [["Huawei"], "HUAWEI Mate 30", "TAS-AL00", "TAS-TL00"],
+      [["Huawei"], "HUAWEI Mate 30 5G", "TAS-AN00", "TAS-TN00"],
+      [["Huawei"], "HUAWEI Mate 30 Pro", "LIO-AL00"],
+      [["Huawei"], "HUAWEI Mate 30 Pro 5G", "LIO-AN00", "LIO-TN00"],
+      [["Huawei"], "HUAWEI P50 Pro", "JAD-AN00", "JAD-AL00", "JAD-AL50", "JAD-AL60"],
+      [["Huawei"], "HUAWEI P60", "LNA-AL00"],
+      [["Huawei"], "HUAWEI P60 Art", "MNA-AL00"],
+      [["Huawei"], "HUAWEI P60 Pro", "MNA-AL00"]
+    ]
+  },
+  {
+    "source": "https://consumer.huawei.com/cn/support/content/zh-cn15967849/",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["Huawei"], "HUAWEI Mate 60 Pro", "ALN-AL00", "ALN-AL80"]
+    ]
+  },
+  {
+    "source": "https://support.google.com/pixelphone/answer/9204905?hl=en",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["Google"], "Pixel 6", "GB7N6"],
+      [["Google"], "Pixel 6 Pro", "GLU0G"],
+      [["Google"], "Pixel 6a", "G1AZG"],
+      [["Google"], "Pixel 7", "GVU6C"],
+      [["Google"], "Pixel 7 Pro", "GP4BC"],
+      [["Google"], "Pixel 7a", "GHL1X"],
+      [["Google"], "Pixel 8", "GPJ41"],
+      [["Google"], "Pixel 8 Pro", "GC3VE"],
+      [["Google"], "Pixel 8a", "G6GPR"],
+      [["Google"], "Pixel Fold", "G9FPL"],
+      [["Google"], "Pixel 9", "GUR25"],
+      [["Google"], "Pixel 9 Pro", "GEC77"],
+      [["Google"], "Pixel 9 Pro Fold", "GGH2X", "GC15S"],
+      [["Google"], "Pixel 9 Pro XL", "GZC4K"],
+      [["Google"], "Pixel 9a", "GTF7P"],
+      [["Google"], "Pixel 10", "GK2MP"],
+      [["Google"], "Pixel 10 Pro", "GEHN3"],
+      [["Google"], "Pixel 10 Pro Fold", "GU0NP"],
+      [["Google"], "Pixel 10 Pro XL", "G45RY"],
+      [["Google"], "Pixel 10a", "G4H7L"]
+    ]
+  },
+  {
+    "source": "https://www.oneplus.com/uk/pstisoc",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["OnePlus"], "OnePlus 13", "CPH2653"],
+      [["OnePlus"], "OnePlus 13R", "CPH2645"],
+      [["OnePlus"], "OnePlus 15", "CPH2747"],
+      [["OnePlus"], "OnePlus 15R", "CPH2769"],
+      [["OnePlus"], "OnePlus Open", "CPH2551"]
+    ]
+  },
+  {
+    "source": "https://www.oppo.com/eg-en/smartphones/series-find-x/find-x8/specs/",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["OPPO"], "OPPO Find X8", "CPH2651"]
+    ]
+  },
+  {
+    "source": "https://www.oppo.com/fr/smartphones/series-find-x/find-x8-pro/specs/",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["OPPO"], "OPPO Find X8 Pro", "CPH2659"]
+    ]
+  },
+  {
+    "source": "https://bdev.oppo.com/open/resource/index/document/detail?id=100",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["OPPO"], "OPPO Find N3", "PHN110"],
+      [["OPPO"], "OPPO Find N5", "PKH110"],
+      [["OPPO"], "OPPO Find N6", "PLP110"],
+      [["OPPO"], "OPPO Find X7", "PHZ110"],
+      [["OPPO"], "OPPO Find X7 Ultra", "PHY110"],
+      [["OPPO"], "OPPO Find X8", "PKB110"],
+      [["OPPO"], "OPPO Find X8 Pro", "PKC110"],
+      [["OPPO"], "OPPO Find X8 Ultra", "PKJ110"],
+      [["OPPO"], "OPPO Find X9", "PLJ110"],
+      [["OPPO"], "OPPO Find X9 Pro", "PLG110"],
+      [["OPPO"], "OPPO Find X9 Ultra", "PMA110"]
+    ]
+  },
+  {
+    "source": "https://www.vivo.com/eu/features?language=en_GB",
+    "basis": "manufacturer-facts",
+    "devices": [
+      [["vivo"], "vivo X80 Pro", "V2145"],
+      [["vivo"], "vivo X90 Pro", "V2219"],
+      [["vivo"], "vivo X100 Pro", "V2309"],
+      [["vivo"], "vivo X200", "V2415"],
+      [["vivo"], "vivo X200 FE", "V2503", "V2505"],
+      [["vivo"], "vivo X200 Pro", "V2413"],
+      [["vivo"], "vivo X300", "V2515"],
+      [["vivo"], "vivo X300 Pro", "V2514"]
+    ]
+  }
+]
