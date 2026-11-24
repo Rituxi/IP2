@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-ip-database
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -21,9 +25,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          CURRENT_COMMIT="$(curl -sfL --retry 3 --retry-delay 2 --max-time 30 \
-            "https://api.github.com/repos/lionsoul2014/ip2region/commits/master" \
-            | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])')"
+          if ! UPSTREAM_HEAD="$(timeout 30s git ls-remote --exit-code \
+            https://github.com/lionsoul2014/ip2region.git refs/heads/master)"; then
+            echo "::error::Could not resolve the ip2region master branch."
+            exit 1
+          fi
+          read -r CURRENT_COMMIT UPSTREAM_REF <<< "$UPSTREAM_HEAD"
+          if [[ ! "$CURRENT_COMMIT" =~ ^[0-9a-f]{40}$ || "$UPSTREAM_REF" != refs/heads/master ]]; then
+            echo "::error::Unexpected ip2region master branch response."
+            exit 1
+          fi
 
           SAVED_COMMIT=""
           if [ -f .last-commit ]; then
@@ -44,16 +55,19 @@ jobs:
       - name: Download latest xdb files
         if: steps.check.outputs.has_update == '1'
         shell: bash
+        env:
+          UPSTREAM_COMMIT: ${{ steps.check.outputs.current_commit }}
         run: |
           set -euo pipefail
 
           mkdir -p data
+          UPSTREAM_DATA="https://raw.githubusercontent.com/lionsoul2014/ip2region/${UPSTREAM_COMMIT}/data"
           curl -fL --retry 3 --retry-delay 2 --max-time 120 \
             -o data/ip2region_v4.xdb \
-            "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v4.xdb"
+            "$UPSTREAM_DATA/ip2region_v4.xdb"
           curl -fL --retry 3 --retry-delay 2 --max-time 300 \
             -o data/ip2region_v6.xdb \
-            "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v6.xdb"
+            "$UPSTREAM_DATA/ip2region_v6.xdb"
 
           V4_SIZE="$(stat -c%s data/ip2region_v4.xdb)"
           V6_SIZE="$(stat -c%s data/ip2region_v6.xdb)"
@@ -74,9 +88,9 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "CLOUDFLARE_API_TOKEN is not configured. Skip R2 upload."
-            exit 0
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error::Cloudflare R2 upload credentials are not configured."
+            exit 1
           fi
           npm install -g wrangler
           npx wrangler r2 object put ip2region-db/ip2region_v4.xdb --file ../data/ip2region_v4.xdb --remote --config wrangler.toml
